@@ -12,6 +12,7 @@ public class GameBoard implements Board {
 
     // Constructor
     public GameBoard(int width, int height){
+        hexMap = new ArrayList<Hex>();
         this.m_width = width;
         this.m_height = height;
 
@@ -20,7 +21,23 @@ public class GameBoard implements Board {
 
     @Override
     public void newGame(){
-        // Testing:
-        hexMap.add(new Hex(HexColor.GREY, 0, 0));
+        rhombusMap();
     }
+
+    private void rhombusMap(){
+        // to shift rows in order to form rhombus (offset)
+        int row_diff = 0;
+
+        // Creates a map shaped like rhombus
+        for(int col = 0; col<m_width / 50; col++){
+            for(int row = 0; row<m_height / 50; row++){
+                hexMap.add(new Hex(HexColor.GREY, 35 * col + row_diff, 31 * row));
+                row_diff += 18;
+
+            }
+            row_diff = 0;
+        }
+    }
+
+    public ArrayList<Hex> getHexMap(){ return hexMap; }
 }
