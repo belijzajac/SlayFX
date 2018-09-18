@@ -3,23 +3,63 @@ package com.slayfx.gui;
 import com.slayfx.logic.GameBoard;
 import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.Point;
-import javafx.fxml.FXML;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Polygon;
 
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Controller {
-    private GameBoard gameBoard;         // Game board
-    private ArrayList<Polygon> polygons; // Holds drawn polygons
+    private GameBoard gameBoard;           // Game board
+    private Map<Polygon, String> polygons; // Holds drawn polygons
 
     // Variables that refer to GUI elements
     @FXML private Pane drawingArea;
 
     public void initialize(){
+        // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
-        polygons = new ArrayList<Polygon>();
+        polygons = new HashMap<Polygon, String>();
         drawHexMap();
+
+        // Initialize mouse event for each polygon (Hexagon)
+        for(final Map.Entry<Polygon, String> hex : polygons.entrySet()){
+            hex.getKey().setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent event) {
+                    // Change polygon's color
+                    Polygon polygon = hex.getKey();
+                    polygon.setFill(Color.ORANGE);
+
+                    // Find corresponding Hex tile
+                    Hex hexTile = findHex(hex.getValue());
+
+                    if(hexTile != null){
+                        System.out.print(hexTile.getCenterCoords().getX());
+                        System.out.print("   ");
+                        System.out.print(hexTile.getCenterCoords().getY());
+                        System.out.println();
+                    }else{
+                        System.out.println("NULL :O");
+                    }
+                }
+            });
+        }
+    }
+
+    // Finds Hex tile with associated string key
+    private Hex findHex(String key){
+        ArrayList<Hex> hexMap = gameBoard.getHexMap();
+        for(Hex m_Hex : hexMap){
+            if(m_Hex.getID().equals(key))
+                return m_Hex;
+        }
+        return null;
     }
 
     private void drawHexMap(){
@@ -35,7 +75,8 @@ public class Controller {
                 m_polygon.getPoints().addAll(vertex.getX(), vertex.getY());
             }
 
-            polygons.add(m_polygon);
+            //polygons.add(m_polygon);
+            polygons.put(m_polygon, m_hex.getID());
             drawingArea.getChildren().addAll(m_polygon);
         }
     }
