@@ -2,6 +2,7 @@ package com.slayfx.gui;
 
 import com.slayfx.logic.GameBoard;
 import com.slayfx.logic.tiles.Hex;
+import com.slayfx.logic.tiles.HexColor;
 import com.slayfx.logic.tiles.Point;
 
 import javafx.event.EventHandler;
@@ -21,6 +22,7 @@ public class Controller {
     // Variables that refer to GUI elements
     @FXML private Pane drawingArea;
 
+    @FXML
     public void initialize(){
         // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
@@ -32,12 +34,10 @@ public class Controller {
             hex.getKey().setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
-                    // Change polygon's color
-                    Polygon polygon = hex.getKey();
-                    polygon.setFill(Color.ORANGE);
-
-                    // Find corresponding Hex tile
-                    Hex hexTile = findHex(hex.getValue());
+                    // Find corresponding Hex tile and change its color
+                    Hex hexTile = findHex(hex.getValue());     // Get Hex object
+                    Polygon polygon = hex.getKey();            // Get Polygon from hex map
+                    paintPolygon(polygon, hexTile.getColor()); // Change its color on click
 
                     if(hexTile != null){
                         System.out.print(hexTile.getCenterCoords().getX());
@@ -75,9 +75,40 @@ public class Controller {
                 m_polygon.getPoints().addAll(vertex.getX(), vertex.getY());
             }
 
-            //polygons.add(m_polygon);
+            // Polygon's visual appeal
+            paintPolygon(m_polygon);
+            m_polygon.setStroke(Color.BLACK);
+            m_polygon.setStrokeWidth(1.1);
+
             polygons.put(m_polygon, m_hex.getID());
             drawingArea.getChildren().addAll(m_polygon);
+        }
+    }
+
+    private void paintPolygon(Polygon polygon){
+        polygon.setFill(Color.LIGHTGRAY);
+    }
+
+    private void paintPolygon(Polygon polygon, HexColor color){
+        switch (color){
+            case YELLOW:
+                polygon.setFill(Color.YELLOW);
+                break;
+            case GREEN:
+                polygon.setFill(Color.GREEN);
+                break;
+            case RED:
+                polygon.setFill(Color.RED);
+                break;
+            case PINK:
+                polygon.setFill(Color.PINK);
+                break;
+            case BLACK:
+                polygon.setFill(Color.BLACK);
+                break;
+            default:
+                polygon.setFill(Color.LIGHTGRAY);
+                break;
         }
     }
 }
