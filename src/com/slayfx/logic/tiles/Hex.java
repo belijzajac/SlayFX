@@ -3,7 +3,7 @@ package com.slayfx.logic.tiles;
 import java.util.ArrayList;
 
 public class Hex implements GameObject {
-    private String m_ID;                                // this helps identifying which hex is which
+    private String m_ID;                        // this helps identifying which hex is which
     private Point m_center_coords;              // coordinates
     private ArrayList<Point> m_vertices_coords; // holds vertices coordinates
     private HexColor m_color;                   // hex color

@@ -31,7 +31,7 @@ public class GameBoard implements Board {
         // Creates a map shaped like rhombus
         for(int col = 0; col<m_width / 50; col++){
             for(int row = 0; row<m_height / 50; row++){
-                hexMap.add(new Hex(HexColor.GREY, 35 * col + row_diff, 31 * row));
+                hexMap.add(new Hex(HexColor.GREEN, 36 * col + row_diff, 31 * row));
                 row_diff += 18;
 
             }
