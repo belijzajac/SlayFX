@@ -29,6 +29,12 @@ public class Hex implements GameObject {
         }
     }
 
+    //Method to display the attribute values of this Object
+    @Override
+    public String toString(){
+        return "m_ID: " + this.m_ID + " color: " + this.m_color.toString();
+    }
+
     public Point getCenterCoords(){
         return m_center_coords;
     }

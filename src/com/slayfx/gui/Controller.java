@@ -36,17 +36,12 @@ public class Controller {
                 public void handle(MouseEvent event) {
                     // Find corresponding Hex tile and change its color
                     Hex hexTile = findHex(hex.getValue());     // Get Hex object
+
+                    // Display the attribute values of the hex tile
+                    System.out.println(hexTile.toString());
+
                     Polygon polygon = hex.getKey();            // Get Polygon from hex map
                     paintPolygon(polygon, hexTile.getColor()); // Change its color on click
-
-                    if(hexTile != null){
-                        System.out.print(hexTile.getCenterCoords().getX());
-                        System.out.print("   ");
-                        System.out.print(hexTile.getCenterCoords().getY());
-                        System.out.println();
-                    }else{
-                        System.out.println("NULL :O");
-                    }
                 }
             });
         }
