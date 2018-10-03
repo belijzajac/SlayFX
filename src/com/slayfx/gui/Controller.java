@@ -77,6 +77,12 @@ public class Controller {
 
             polygons.put(m_polygon, m_hex.getID());
             drawingArea.getChildren().addAll(m_polygon);
+
+            // TODO: move this to a logical part
+            // Primary players' hex tiles
+            if(!m_hex.getOwner().equals("abandoned")){
+                paintPolygon(m_polygon, m_hex.getColor());
+            }
         }
     }
 
