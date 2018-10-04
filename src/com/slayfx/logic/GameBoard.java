@@ -14,11 +14,14 @@ public class GameBoard implements Board {
     private ArrayList<Hex> hexMap;
     private ArrayList<Player> m_players; // holds players' data
 
+    private int m_currectPlaerNum; // index of the current player
+
     // Constructor
     public GameBoard(int width, int height){
         hexMap = new ArrayList<Hex>();
         m_players = new ArrayList<Player>();
 
+        m_currectPlaerNum = 0;
         this.m_width = width;
         this.m_height = height;
 
@@ -30,6 +33,7 @@ public class GameBoard implements Board {
         rhombusMap();           // Creates the map
         createPlayers(2); 	// Initializes the players
         randomlySpawnPlayers(); // randomly spawn players
+        // TODO:                 // Play the game
     }
 
     private void rhombusMap(){
@@ -39,7 +43,7 @@ public class GameBoard implements Board {
         // Creates a map shaped like rhombus
         for(int col = 0; col<m_width / 50; col++){
             for(int row = 0; row<m_height / 50; row++){
-                hexMap.add(new Hex(HexColor.GREEN, 36 * col + row_diff, 31 * row));
+                hexMap.add(new Hex(HexColor.GREEN, 36 * col + row_diff + 55, 31 * row + 100));
                 row_diff += 18;
             }
             row_diff = 0;
@@ -92,4 +96,16 @@ public class GameBoard implements Board {
     }
 
     public ArrayList<Hex> getHexMap(){ return hexMap; }
+
+    public int getCurrPlayerIndex(){ return m_currectPlaerNum; }
+
+    public void changeCurrPlayerIndex(int index){
+        if (index >= m_players.size()) {
+            m_currectPlaerNum = 0;
+        } else {
+            m_currectPlaerNum = index;
+        }
+    }
+
+    public ArrayList<Player> getPlayersList(){ return m_players; }
 }
