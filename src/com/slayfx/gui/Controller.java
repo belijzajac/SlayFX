@@ -10,9 +10,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.image.Image;
 import javafx.scene.control.Button;
@@ -24,6 +26,9 @@ import java.util.Map;
 public class Controller {
     private GameBoard gameBoard;           // Game board
     private Map<Polygon, String> polygons; // Holds drawn polygons
+    private Map<Label, String> drawnGameObjects = new HashMap<>();
+
+    private Polygon activePolygon; // Polygon that user has clicked with the mouse
 
     // Variables that refer to GUI elements
     @FXML private Pane drawingArea;
@@ -31,12 +36,22 @@ public class Controller {
     @FXML private Label playerLabel;
     @FXML private Label moneyLabel;
 
+    @FXML private Button towerBtn;
+    @FXML private Button soldier1Btn;
+    @FXML private Button soldier2Btn;
+    @FXML private Button soldier3Btn;
+
     @FXML
     public void initialize(){
         // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
         polygons = new HashMap<Polygon, String>();
         drawHexMap();   // draws map
+
+        // TODO: Clean it up
+        Map.Entry<Polygon,String> entry = polygons.entrySet().iterator().next(); // iterator
+        activePolygon = entry.getKey();                                          // get first value
+
         updateLabels(); // updates labels
 
         // Initialize mouse event for each polygon (Hexagon)
@@ -48,13 +63,18 @@ public class Controller {
                     Hex hexTile = findHex(hex.getValue());     // Get Hex object
                     Polygon polygon = hex.getKey();            // Get Polygon from hex map
 
+                    activePolygon.setStroke(Color.BLACK); // reset stroke of the previous polygon
+                    activePolygon = polygon;              // we get a new active corresponding polygon
+                    highlighActiveHex();                  // highligh it
+
                     // TODO: IF STATEMENTS WHETHER IT'S A VALID MOVE TO CONQUIRE A HEX TILE
                     if(!hexTile.getOwner().equals(gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName())) {
                         // Display the attribute values of the hex tile
                         System.out.println(hexTile.toString());
-
-                        paintPolygon(polygon, gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getColor()); // Change its color on click
-                        hexTile.changeOwner(gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName());
+                        // TODO: add soldiers to selected tile / move soldier from selected tile to another tile
+                        // oldX <==> newX and oldY <==> newY
+                        //paintPolygon(polygon, gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getColor()); // Change its color on click
+                        //hexTile.changeOwner(gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName());
                     }
                 }
             });
@@ -64,16 +84,39 @@ public class Controller {
         // ...???
     }
 
+    private void highlighActiveHex(){
+        // find corresponding hex
+        Hex activeHex = findHex( activePolygon.getId() ); // TODO: <<--- do stuff with it?
+        activePolygon.setStroke(Color.FLORALWHITE);
+    }
+
     private void updateLabels(){
         playerLabel.setText("Turn: " + gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName());
         moneyLabel.setText("Money: " + Integer.toString( gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getMoney() ));
     }
 
     @FXML
-    private void onNextTurnBtnClicked(ActionEvent event){ // TODO:
+    private void onNextTurnBtnClicked(ActionEvent event){
         System.out.println("Next turn!");
         gameBoard.changeCurrPlayerIndex(gameBoard.getCurrPlayerIndex() + 1);
         updateLabels();
+    }
+
+    private void drawHouse(Hex hex){
+        Label house_label = new Label();
+        Image hut_img = new Image(new File("../res/images/hut.png").toURI().toString());
+
+        house_label.relocate(hex.getCoords().getX() - 13, hex.getCoords().getY() - 13);
+        ImageView houseImgView = new ImageView(hut_img);
+
+        houseImgView.setFitWidth(25);
+        houseImgView.setFitHeight(25);
+
+        house_label.setGraphic(houseImgView);
+        house_label.setDisable(true);
+
+        drawnGameObjects.put(house_label, hex.getID()); // add game object to map
+        drawingArea.getChildren().addAll(house_label);  // add it to pane
     }
 
     // Finds Hex tile with associated string key
@@ -88,7 +131,6 @@ public class Controller {
 
     private void drawHexMap(){
         ArrayList<Hex> map = gameBoard.getHexMap();
-        Image hut_img = new Image(new File("res/images/tower.png").toURI().toString());
 
         // Draw hexagon polygons:
         for(Hex m_hex : map){
@@ -116,6 +158,7 @@ public class Controller {
                 if(m_hex.getState().equals(HexState.HOUSE)){
                     // TODO: implement drawing via canvas, preferably via polymorphism
                     //m_polygon.setFill(new ImagePattern(hut_img));
+                    drawHouse(m_hex);
                 }
             }
         }
