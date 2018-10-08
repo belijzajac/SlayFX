@@ -18,7 +18,7 @@
          <Button fx:id="btnNextTurn" alignment="TOP_CENTER" contentDisplay="CENTER" layoutX="13.0" layoutY="417.0" mnemonicParsing="false" onAction="#onNextTurnBtnClicked" text="End Turn" textAlignment="CENTER" />
          <Label fx:id="playerLabel" layoutX="14.0" layoutY="14.0" text="Turn: " />
          <Label fx:id="moneyLabel" layoutX="14.0" layoutY="61.0" text="Money: " />
-         <Button fx:id="towerBtn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="135.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="110.0" text="= 15" textAlignment="CENTER">
+         <Button fx:id="towerBtn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="135.0" mnemonicParsing="false" onAction="#onBuyTowerBtnClicked" prefHeight="37.0" prefWidth="110.0" text="= 15" textAlignment="CENTER">
             <graphic>
                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                   <image>
@@ -26,7 +26,7 @@
                   </image>
                </ImageView>
             </graphic></Button>
-         <Button fx:id="soldier1Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="183.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="110.0" text="= 2" textAlignment="CENTER">
+         <Button fx:id="soldier1Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="183.0" mnemonicParsing="false" onAction="#onBuyPeasantBtnClicked" prefHeight="37.0" prefWidth="110.0" text="= 2" textAlignment="CENTER">
             <graphic>
                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                   <image>
@@ -35,7 +35,7 @@
                </ImageView>
             </graphic>
          </Button>
-         <Button fx:id="soldier2Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="230.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="110.0" text="= 6" textAlignment="CENTER">
+         <Button fx:id="soldier2Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="230.0" mnemonicParsing="false" onAction="#onBuySlodierBtnClicked" prefHeight="37.0" prefWidth="110.0" text="= 6" textAlignment="CENTER">
             <graphic>
                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                   <image>
@@ -44,7 +44,7 @@
                </ImageView>
             </graphic>
          </Button>
-         <Button fx:id="soldier3Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="277.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="110.0" text="= 18" textAlignment="CENTER">
+         <Button fx:id="soldier3Btn" alignment="TOP_CENTER" layoutX="-2.0" layoutY="277.0" mnemonicParsing="false" onAction="#onBuyWarriorBtnClicked" prefHeight="37.0" prefWidth="110.0" text="= 18" textAlignment="CENTER">
             <graphic>
                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                   <image>

@@ -16,4 +16,5 @@ public class Player {
     public String getName(){ return m_name; }
     public HexColor getColor(){ return m_color; }
     public int getMoney(){ return m_money; }
+    public void setMoney(int money){ m_money = money; }
 }
