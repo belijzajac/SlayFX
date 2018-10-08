@@ -1,24 +1,18 @@
 package com.slayfx.gui;
 
 import com.slayfx.logic.GameBoard;
-import com.slayfx.logic.tiles.Hex;
-import com.slayfx.logic.tiles.HexColor;
-import com.slayfx.logic.tiles.HexState;
-import com.slayfx.logic.tiles.Point;
+import com.slayfx.logic.player.Player;
+import com.slayfx.logic.tiles.*;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
-import javafx.scene.image.Image;
 import javafx.scene.control.Button;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +20,7 @@ import java.util.Map;
 public class Controller {
     private GameBoard gameBoard;           // Game board
     private Map<Polygon, String> polygons; // Holds drawn polygons
-    private Map<Label, String> drawnGameObjects = new HashMap<>();
-
+    private Map<BuyableItem, String> drawnGameObjects = new HashMap<BuyableItem, String>();
     private Polygon activePolygon; // Polygon that user has clicked with the mouse
 
     // Variables that refer to GUI elements
@@ -35,7 +28,6 @@ public class Controller {
     @FXML private Button btnNextTurn;
     @FXML private Label playerLabel;
     @FXML private Label moneyLabel;
-
     @FXML private Button towerBtn;
     @FXML private Button soldier1Btn;
     @FXML private Button soldier2Btn;
@@ -48,7 +40,7 @@ public class Controller {
         polygons = new HashMap<Polygon, String>();
         drawHexMap();   // draws map
 
-        // TODO: Clean it up
+        // By default make activePolygon point to the first polygon object
         Map.Entry<Polygon,String> entry = polygons.entrySet().iterator().next(); // iterator
         activePolygon = entry.getKey();                                          // get first value
 
@@ -68,7 +60,7 @@ public class Controller {
                     highlighActiveHex();                  // highligh it
 
                     // TODO: IF STATEMENTS WHETHER IT'S A VALID MOVE TO CONQUIRE A HEX TILE
-                    if(!hexTile.getOwner().equals(gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName())) {
+                    if(!hexTile.getOwner().equals( getCurrentPlayerObj().getName()) ) {
                         // Display the attribute values of the hex tile
                         System.out.println(hexTile.toString());
                         // TODO: add soldiers to selected tile / move soldier from selected tile to another tile
@@ -79,45 +71,72 @@ public class Controller {
                 }
             });
         }
-
-        // TODO: main game loop?
-        // ...???
     }
 
     private void highlighActiveHex(){
-        // find corresponding hex
-        Hex activeHex = findHex( activePolygon.getId() ); // TODO: <<--- do stuff with it?
         activePolygon.setStroke(Color.FLORALWHITE);
     }
 
     private void updateLabels(){
-        playerLabel.setText("Turn: " + gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getName());
-        moneyLabel.setText("Money: " + Integer.toString( gameBoard.getPlayersList().get(gameBoard.getCurrPlayerIndex()).getMoney() ));
+        playerLabel.setText("Turn: " + getCurrentPlayerObj().getName());
+        moneyLabel.setText("Money: " + Integer.toString( getCurrentPlayerObj().getMoney() ));
     }
 
     @FXML
     private void onNextTurnBtnClicked(ActionEvent event){
+        // TODO: cia vyktu priskyrimas  oldActivePolygon == null
+
         System.out.println("Next turn!");
+        getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() + 50 );
         gameBoard.changeCurrPlayerIndex(gameBoard.getCurrPlayerIndex() + 1);
+
         updateLabels();
+
+        // TEST label stuff
+        // Get first label in drawnGameObjects and change its coordinates
+        Map.Entry<BuyableItem,String> entry = drawnGameObjects.entrySet().iterator().next(); // iterator
+        BuyableItem item = entry.getKey();                                                   // get first value
+        item.move(541 - 13, 379 - 13);                                                  // change position
+        item.getLabel().toFront();                                                           // move the Node to the front of its sibling nodes
     }
 
-    private void drawHouse(Hex hex){
-        Label house_label = new Label();
-        Image hut_img = new Image(new File("../res/images/hut.png").toURI().toString());
+    @FXML
+    private void onBuyTowerBtnClicked(ActionEvent event){
+        // Find hex that activePolygon points to
+        Hex hex = findHex( polygons.get( activePolygon ) ); // polygons.get( activePolygon ) returns String m_ID
 
-        house_label.relocate(hex.getCoords().getX() - 13, hex.getCoords().getY() - 13);
-        ImageView houseImgView = new ImageView(hut_img);
+        if(hex == null)
+            System.out.println("You fucked up :(");
+        else if(hex.getOwner().equals("abandoned")){                                               // only add buyableItems to abandoned hex tiles
+            // Change hex tile attribus to new ones:
+            hex.changeState(HexState.TOWER);                                                       // change state of a hex
+            hex.changeOwner(getCurrentPlayerObj().getName());                                      // change owner
+            hex.changeColor( getCurrentPlayerObj().getColor() );                                   // change color
+            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());                         // apply new color
 
-        houseImgView.setFitWidth(25);
-        houseImgView.setFitHeight(25);
+            BuyableItem tower = new TowerItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
 
-        house_label.setGraphic(houseImgView);
-        house_label.setDisable(true);
-
-        drawnGameObjects.put(house_label, hex.getID()); // add game object to map
-        drawingArea.getChildren().addAll(house_label);  // add it to pane
+            drawnGameObjects.put(tower, hex.getID());                                              // add game object to map
+            drawingArea.getChildren().addAll(tower.getLabel());                                    // add it to pane
+        }
     }
+
+    @FXML
+    private void onBuyPeasantBtnClicked(ActionEvent event){
+        // ...
+    }
+
+    @FXML
+    private void onBuySlodierBtnClicked(ActionEvent event){
+        // ...
+    }
+
+    @FXML
+    private void onBuyWarriorBtnClicked(ActionEvent event){
+        // ...
+    }
+
+    private Player getCurrentPlayerObj(){ return gameBoard.getPlayersList().get( gameBoard.getCurrPlayerIndex() ); }
 
     // Finds Hex tile with associated string key
     private Hex findHex(String key){
@@ -156,9 +175,12 @@ public class Controller {
                 paintPolygon(m_polygon, m_hex.getColor());
 
                 if(m_hex.getState().equals(HexState.HOUSE)){
-                    // TODO: implement drawing via canvas, preferably via polymorphism
-                    //m_polygon.setFill(new ImagePattern(hut_img));
-                    drawHouse(m_hex);
+                    // Add game object to map
+                    BuyableItem hut = new HouseItem(m_hex.getCoords(), m_hex.getID(), getCurrentPlayerObj().getName());  // create a hut image
+                    drawnGameObjects.put(hut, m_hex.getID());                                                            // add game object to map
+                    drawingArea.getChildren().addAll(hut.getLabel());                                                    // add it to pane
+                    m_hex.changeOwner(getCurrentPlayerObj().getName());    // change owner
+                    m_hex.changeColor( getCurrentPlayerObj().getColor() ); // change color
                 }
             }
         }
