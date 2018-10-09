@@ -100,40 +100,69 @@ public class Controller {
         item.getLabel().toFront();                                                           // move the Node to the front of its sibling nodes
     }
 
-    @FXML
-    private void onBuyTowerBtnClicked(ActionEvent event){
+    private void addDrawnObjectToMap(HexState whatItem){
+        HexState state = HexState.EMPTY;
+
+        // Determine what state is that
+        switch (whatItem){
+            case HOUSE: state = HexState.HOUSE;
+                break;
+            case TOWER: state = HexState.TOWER;
+                break;
+            case SOLDIER_1: state = HexState.SOLDIER_1;
+                break;
+            case SOLDIER_2: state = HexState.SOLDIER_2;
+                break;
+            case SOLDIER_3: state = HexState.SOLDIER_3;
+                break;
+        }
+
         // Find hex that activePolygon points to
         Hex hex = findHex( polygons.get( activePolygon ) ); // polygons.get( activePolygon ) returns String m_ID
 
-        if(hex == null)
-            System.out.println("You fucked up :(");
-        else if(hex.getOwner().equals("abandoned")){                                               // only add buyableItems to abandoned hex tiles
-            // Change hex tile attribus to new ones:
-            hex.changeState(HexState.TOWER);                                                       // change state of a hex
-            hex.changeOwner(getCurrentPlayerObj().getName());                                      // change owner
-            hex.changeColor( getCurrentPlayerObj().getColor() );                                   // change color
-            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());                         // apply new color
+        if(hex != null && !state.equals(HexState.EMPTY) && hex.getOwner().equals("abandoned")){
+            // Change hex tile attributes to new ones:
+            hex.changeState(state);                                           // change state of a hex
+            hex.changeOwner(getCurrentPlayerObj().getName());                 // change owner
+            hex.changeColor( getCurrentPlayerObj().getColor() );              // change color
+            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());    // apply new color
 
-            BuyableItem tower = new TowerItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
+            BuyableItem item = null;
+            if(state.equals(HexState.HOUSE))
+                item = new HouseItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
+            else if(state.equals(HexState.TOWER))
+                item = new TowerItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
+            else if(state.equals(HexState.SOLDIER_1))
+                item = new PeasantItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
+            else if(state.equals(HexState.SOLDIER_2))
+                item = new SoldierItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
+            else if(state.equals(HexState.SOLDIER_3))
+                item = new WarriorItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
 
-            drawnGameObjects.put(tower, hex.getID());                                              // add game object to map
-            drawingArea.getChildren().addAll(tower.getLabel());                                    // add it to pane
+            // Add that object to the drawnObjects map:
+            drawnGameObjects.put(item, hex.getID());            // add game object to map
+            drawingArea.getChildren().addAll(item.getLabel());  // add it to pane
         }
     }
 
     @FXML
+    private void onBuyTowerBtnClicked(ActionEvent event){
+        addDrawnObjectToMap(HexState.TOWER);
+    }
+
+    @FXML
     private void onBuyPeasantBtnClicked(ActionEvent event){
-        // ...
+        addDrawnObjectToMap(HexState.SOLDIER_1);
     }
 
     @FXML
     private void onBuySlodierBtnClicked(ActionEvent event){
-        // ...
+        addDrawnObjectToMap(HexState.SOLDIER_2);
     }
 
     @FXML
     private void onBuyWarriorBtnClicked(ActionEvent event){
-        // ...
+        addDrawnObjectToMap(HexState.SOLDIER_3);
     }
 
     private Player getCurrentPlayerObj(){ return gameBoard.getPlayersList().get( gameBoard.getCurrPlayerIndex() ); }
@@ -174,6 +203,7 @@ public class Controller {
             if(!m_hex.getOwner().equals("abandoned")){
                 paintPolygon(m_polygon, m_hex.getColor());
 
+                // Do stuff WHEN the game starts (initializes default players)
                 if(m_hex.getState().equals(HexState.HOUSE)){
                     // Add game object to map
                     BuyableItem hut = new HouseItem(m_hex.getCoords(), m_hex.getID(), getCurrentPlayerObj().getName());  // create a hut image
