@@ -8,7 +8,6 @@ import javafx.scene.image.ImageView;
 import java.io.File;
 
 public class BuyableItem extends GameObject {
-    public static int m_cost;
     private String m_owner;  // player who owns this item
     private int m_moveCount; // how far diagonally can the item be moved
     private int m_damage;    // damage the item deals
@@ -55,7 +54,7 @@ public class BuyableItem extends GameObject {
         m_label.setDisable(true);
     }
 
-    public void move(int x, int y){}
+    public boolean move(Hex hex){ return true; }
 
     public int getMovementCount(){ return m_moveCount; }
     public void setMovementCount(int count){ m_moveCount = count; }
