@@ -8,9 +8,10 @@ import javafx.scene.image.ImageView;
 import java.io.File;
 
 public class BuyableItem extends GameObject {
-    private String m_owner;  // player who owns this item
-    private int m_moveCount; // how far diagonally can the item be moved
-    private int m_damage;    // damage the item deals
+    private String m_owner;      // player who owns this item
+    private int m_maxMoveCount;  // how far diagonally can the item be moved
+    private int m_currMoveCount; // current move count
+    private int m_damage;        // damage the item deals
     @FXML Label m_label;
     @FXML Image m_image;
 
@@ -20,11 +21,15 @@ public class BuyableItem extends GameObject {
     public static final String soldier_img = "../res/images/soldier_2.png";
     public static final String warrior_img = "../res/images/soldier_3.png";
 
-    public BuyableItem(String owner, String image_location, Point coords){
-        super();
+    public BuyableItem(String owner, Point coords){
+        super(); // <-- call GameObject constructor
 
         setCoords(coords);
         m_owner = owner;
+    }
+
+    public BuyableItem(String owner, String image_location, Point coords){
+        this(owner, coords); // <-- call the other constructor
 
         String imageLoc = "";
         switch (image_location){
@@ -56,8 +61,13 @@ public class BuyableItem extends GameObject {
 
     public boolean move(Hex hex){ return true; }
 
-    public int getMovementCount(){ return m_moveCount; }
-    public void setMovementCount(int count){ m_moveCount = count; }
+    public void decreaseCount() {}
+
+    public int getMaxMovementCount(){ return m_maxMoveCount; }
+    public int getCurrMovementCount(){ return m_currMoveCount; }
+    public void setMovementCount(int count){ m_maxMoveCount = m_currMoveCount = count; }
+    public void decreaseCurrMovementCount(){ if(m_currMoveCount > 0) --m_currMoveCount; }
+    public void resetMovementCountToDefault(){ m_currMoveCount = m_maxMoveCount; }
 
     public int getDamage(){ return m_damage; }
     public void setDamage(int dmg){ m_damage = dmg; }

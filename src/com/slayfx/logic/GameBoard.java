@@ -13,8 +13,8 @@ public class GameBoard implements Board {
     private final int m_height;
     private ArrayList<Hex> hexMap;
     private ArrayList<Player> m_players; // holds players' data
-
     private int m_currectPlaerNum; // index of the current player
+    public static int m_turnCount = 0;
 
     // Constructor
     public GameBoard(int width, int height){
