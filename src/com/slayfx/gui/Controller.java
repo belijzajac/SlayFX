@@ -90,7 +90,7 @@ public class Controller {
 
                     if(oldHex != null && oldItem != null && oldHex.getOwner().equals( getCurrentPlayerObj().getName() ) && oldItem.getOwner().equals( getCurrentPlayerObj().getName() )){
                         // Checks if it's a valid move
-                        if( oldItem.getCurrMovementCount() > 0 && oldItem.move( hexTile ) ){ // <-- move it where activePolygon points to
+                        if( oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move( hexTile ) ){ // <-- move it where activePolygon points to
                             oldItem.decreaseCurrMovementCount();
 
                             // Remove that item from the game board
@@ -121,6 +121,40 @@ public class Controller {
                 }
             });
         }
+    }
+
+    //  Diagonal hex based on defaultHex is formed like the following:
+    //           (x-18; y-31)     (x+18; y-31)
+    //   (x-36; y)          (x; y)          (x+36; y)
+    //           (x-18; y+31)     (x+18; y+31)
+    private boolean canMoveDiagonally(Hex hexFrom, Hex hexTo){
+        // 1) top-left hex
+        if(checkIDsOfHexs(hexFrom, hexTo, -18.0, -31.0))
+            return true;
+
+        // 2 top-right hex
+        else if(checkIDsOfHexs(hexFrom, hexTo, 18.0, -31.0))
+            return true;
+
+        // 3) left hex
+        else if(checkIDsOfHexs(hexFrom, hexTo, -36.0, 0.0))
+            return true;
+
+        // 4) right hex
+        else if(checkIDsOfHexs(hexFrom, hexTo, 36.0, 0.0))
+            return true;
+
+        // 5) bottom-left hex
+        else if(checkIDsOfHexs(hexFrom, hexTo, -18.0, 31.0))
+            return true;
+
+        // 6) bottom-right hex
+        else return checkIDsOfHexs(hexFrom, hexTo, 18.0, 31.0);
+    }
+
+    private boolean checkIDsOfHexs(Hex hexFrom, Hex hexTo, double x, double y){
+        String hexID = Double.toString( hexFrom.getCoords().getX() + x) + '_' + Double.toString( hexFrom.getCoords().getY() + y);
+        return (hexTo.getID().equals(hexID));
     }
 
     // Basically removes this object from the game
