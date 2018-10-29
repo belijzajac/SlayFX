@@ -7,15 +7,66 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    @Override
-    public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("gameLayout.fxml"));
-        primaryStage.setTitle("SlayFX");
-        primaryStage.setScene(new Scene(root, 780, 520));
-        primaryStage.show();
+    private static Stage stage;
+    private static Main instance;
+
+    public Main(){
+        instance = this;
+    }
+
+    public static Main getInstance(){
+        return instance;
     }
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+        try{
+            stage = primaryStage;
+            gotoMainStage();
+            primaryStage.setTitle("SlayFX");
+            primaryStage.show();
+        } catch (Exception ex){
+            System.out.println("Caught an exception: " + ex);
+        }
+    }
+
+    private void gotoMainStage(){
+        try{
+            replaceSceneContent("mainWindowLayout.fxml");
+        }catch (Exception ex){
+            System.out.println("Caught an exception: " + ex);
+        }
+    }
+
+    static void gotoLevelChoosingStage(){
+        try{
+            replaceSceneContent("mapChooseLayout.fxml");
+        }catch (Exception ex){
+            System.out.println("Caught an exception: " + ex);
+        }
+    }
+
+    static void gotoGameStage(){
+        try{
+            replaceSceneContent("gameLayout.fxml");
+        }catch (Exception ex){
+            System.out.println("Caught an exception: " + ex);
+        }
+    }
+
+    private static void replaceSceneContent(final String fxmlFile) throws Exception{
+        Parent root = FXMLLoader.load(Main.class.getResource(fxmlFile));
+        Scene scene = stage.getScene();
+        if(scene == null){
+            scene = new Scene(root, 780, 520);
+            stage.setScene(scene);
+        }else{
+            stage.getScene().setRoot(root);
+        }
+        stage.sizeToScene();
     }
 }

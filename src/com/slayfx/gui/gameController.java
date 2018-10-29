@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Controller {
+public class gameController {
     private GameBoard gameBoard;           // Game board
     private Map<Polygon, String> polygons; // Holds drawn polygons
     private Map<BuyableItem, String> drawnGameObjects;
