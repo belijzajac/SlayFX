@@ -4,6 +4,7 @@ import com.slayfx.logic.player.Player;
 import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.HexColor;
 import com.slayfx.logic.tiles.HexState;
+import com.slayfx.gui.mapChooseController;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -30,10 +31,9 @@ public class GameBoard implements Board {
 
     @Override
     public void newGame(){
-        rhombusMap();           // Creates the map
-        createPlayers(2); 	// Initializes the players
-        randomlySpawnPlayers(); // randomly spawn players
-        // TODO:                 // Play the game
+        rhombusMap();                                       // Creates the map
+        createPlayers( mapChooseController.getPlayers() ); 	// Initializes the players
+        randomlySpawnPlayers();                             // randomly spawn players
     }
 
     private void rhombusMap(){

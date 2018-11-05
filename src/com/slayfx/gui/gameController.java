@@ -1,9 +1,11 @@
 package com.slayfx.gui;
 
+import com.slayfx.libs.DateAndTime.*;
 import com.slayfx.logic.GameBoard;
 import com.slayfx.logic.player.Player;
 import com.slayfx.logic.tiles.*;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -11,17 +13,20 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.control.Button;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class gameController {
-    private GameBoard gameBoard;           // Game board
-    private Map<Polygon, String> polygons; // Holds drawn polygons
+    private GameBoard gameBoard;                          // Game board
+    private Map<Polygon, String> polygons;                // Holds drawn polygons
     private Map<BuyableItem, String> drawnGameObjects;
-    private Polygon activePolygon; // Polygon that user has clicked with the mouse
+    private Polygon activePolygon;                        // Polygon that user has clicked with the mouse
     private Polygon oldactivePolygon;
     private boolean hadUserClickedOnHex = false;
+
+    // Timer:
+    private static Timer timer;
+    private ControlDateAndTime timeElapsed;
+    @FXML private Label timeLabel;
 
     // Variables that refer to GUI elements
     @FXML private Pane drawingArea;
@@ -35,11 +40,16 @@ public class gameController {
 
     @FXML
     public void initialize(){
+        // Build time elapsed
+        DateAndTimeBuilder builder = new BuildDataAndTime();
+        timeElapsed = builder.buildMinutes().buildSeconds().buildDate();
+
         // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
         polygons = new HashMap<Polygon, String>();
         drawnGameObjects  = new HashMap<BuyableItem, String>();
         drawHexMap();   // draws map
+        setUpTimer();
 
         // By default make activePolygon point to the first polygon object
         Map.Entry<Polygon,String> entry = polygons.entrySet().iterator().next(); // iterator
@@ -123,6 +133,35 @@ public class gameController {
         }
     }
 
+    private void setUpTimer(){
+        // Create a timer and schedule it to run every 1 second
+        timer = new Timer();
+        timer.scheduleAtFixedRate(
+                new TimerTask()
+                {
+                    public void run() {
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(timeElapsed.getMinutes().equals("00") && timeElapsed.getSeconds().equals("00"))
+                                    onNextTurnBtnClicked();
+                                else{
+                                    timeElapsed.subSeconds(1);
+                                    timeLabel.setText(timeElapsed.getMinutes() + ":" + timeElapsed.getSeconds());
+                                }
+                            }
+                        });
+                    }
+                },
+                100,      // run first occurrence after 100 ms
+                1000);  // run every seconds
+    }
+
+    public static void cancelTimer(){
+        if(timer != null)
+            timer.cancel();
+    }
+
     //  Diagonal hex based on defaultHex is formed like the following:
     //           (x-18; y-31)     (x+18; y-31)
     //   (x-36; y)          (x; y)          (x+36; y)
@@ -192,15 +231,12 @@ public class gameController {
     }
 
     @FXML
-    private void onNextTurnBtnClicked(ActionEvent event){
+    private void onNextTurnBtnClicked(){
         System.out.println("Next turn!");
         getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() + 10 );
         gameBoard.changeCurrPlayerIndex(gameBoard.getCurrPlayerIndex() + 1);
 
         GameBoard.m_turnCount++;
-
-        //oldactivePolygon = activePolygon;
-
         updateLabels();
 
         // Increase game difficulty every 3 turns if certain conditions are met
@@ -215,6 +251,10 @@ public class gameController {
         for(final Map.Entry<BuyableItem, String> drawnObj : drawnGameObjects.entrySet()){
             drawnObj.getKey().resetMovementCountToDefault();
         }
+
+        // Reset timer:
+        timeElapsed.setMinutes(3);
+        timeElapsed.setSeconds(0);
     }
 
     // Increase game difficulty by increasing prices
