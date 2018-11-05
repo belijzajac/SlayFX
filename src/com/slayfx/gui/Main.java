@@ -1,6 +1,7 @@
 package com.slayfx.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,7 +24,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) {
         try{
             stage = primaryStage;
             gotoMainStage();
@@ -32,6 +33,14 @@ public class Main extends Application {
         } catch (Exception ex){
             System.out.println("Caught an exception: " + ex);
         }
+    }
+
+    // Close all threads (running timers, etc.) when all the stages are closed
+    @Override
+    public void stop(){
+        // Terminate timer in gameStage on window close
+        gameController.cancelTimer();
+        Platform.exit();
     }
 
     private void gotoMainStage(){
