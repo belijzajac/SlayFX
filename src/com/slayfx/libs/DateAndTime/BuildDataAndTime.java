@@ -33,7 +33,7 @@ public class BuildDataAndTime implements DateAndTimeBuilder {
 
     @Override
     public DateAndTimeBuilder buildMinutes() {
-        date.setMinutes(3);
+        date.setMinutes(1);
         return this;
     }
 
