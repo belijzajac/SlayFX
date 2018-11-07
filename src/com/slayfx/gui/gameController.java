@@ -228,6 +228,12 @@ public class gameController {
             case YELLOW: playerLabel.setStyle("-fx-background-color: yellow;");
                 break;
         }
+
+        // Update items prices:
+        towerBtn.setText("= " + Integer.toString(TowerItem.m_cost));
+        soldier1Btn.setText("= " + Integer.toString(PeasantItem.m_cost));
+        soldier2Btn.setText("= " + Integer.toString(SoldierItem.m_cost));
+        soldier3Btn.setText("= " + Integer.toString(WarriorItem.m_cost));
     }
 
     @FXML
@@ -253,7 +259,7 @@ public class gameController {
         }
 
         // Reset timer:
-        timeElapsed.setMinutes(3);
+        timeElapsed.setMinutes(1);
         timeElapsed.setSeconds(0);
     }
 

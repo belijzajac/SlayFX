@@ -1,5 +1,6 @@
 package com.slayfx.logic;
 
+import com.slayfx.logic.map.MapReader;
 import com.slayfx.logic.player.Player;
 import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.HexColor;
@@ -31,23 +32,13 @@ public class GameBoard implements Board {
 
     @Override
     public void newGame(){
-        rhombusMap();                                       // Creates the map
+        loadMap();                                          // Loads the map
         createPlayers( mapChooseController.getPlayers() ); 	// Initializes the players
         randomlySpawnPlayers();                             // randomly spawn players
     }
 
-    private void rhombusMap(){
-        // to shift rows in order to form rhombus (offset)
-        int row_diff = 0;
-
-        // Creates a map shaped like rhombus
-        for(int col = 0; col<m_width / 50; col++){
-            for(int row = 0; row<m_height / 50; row++){
-                hexMap.add(new Hex(HexColor.GREEN, 36 * col + row_diff + 55, 31 * row + 100));
-                row_diff += 18;
-            }
-            row_diff = 0;
-        }
+    private void loadMap(){
+        hexMap = MapReader.read("../res/maps/" + mapChooseController.getChosenMap());
     }
 
     private HexColor getRandomColor(){
@@ -70,7 +61,7 @@ public class GameBoard implements Board {
             return color;
 
         // Loop as long as we find unique color
-        // TODO: only works with up to 5 players (we have 5 different colors)
+        // NOTE: only works with up to 5 players (we have 5 different colors)
         while(hasAnoteherPlayerHaveThisColor(initializedPlayersSoFar, color))
             color = getRandomColor();
 
