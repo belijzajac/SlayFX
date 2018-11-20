@@ -24,14 +24,12 @@ public final class MapReader {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null){
-                System.out.println(line);
-
                 // Parse line
                 String[] parts = line.split(";", 2);
 
                 int x_ = Integer.valueOf(parts[0]);
                 int y_ = Integer.valueOf(parts[1]);
-                hexMap.add(new Hex(HexColor.GREEN, x_, y_));
+                hexMap.add(new Hex(HexColor.EMPTY, x_, y_));
             }
             bufferedReader.close();
         }

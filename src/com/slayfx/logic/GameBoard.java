@@ -42,7 +42,7 @@ public class GameBoard implements Board {
     }
 
     private HexColor getRandomColor(){
-        return HexColor.values()[new Random().nextInt(HexColor.values().length)]; // random color
+        return HexColor.values()[new Random().nextInt(HexColor.values().length - 1)]; // random color; omitting HexColor.EMPTY
     }
 
     private boolean hasAnoteherPlayerHaveThisColor(int initializedPlayersSoFar, HexColor color){

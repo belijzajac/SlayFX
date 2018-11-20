@@ -4,7 +4,6 @@ import com.slayfx.libs.DateAndTime.*;
 import com.slayfx.logic.GameBoard;
 import com.slayfx.logic.player.Player;
 import com.slayfx.logic.tiles.*;
-
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,8 +16,8 @@ import java.util.*;
 
 public class gameController {
     private GameBoard gameBoard;                          // Game board
-    private Map<Polygon, String> polygons;                // Holds drawn polygons
-    private Map<BuyableItem, String> drawnGameObjects;
+    private Map<String, Polygon> polygons;                // Holds drawn polygons
+    private Map<String, BuyableItem> drawnGameObjects;
     private Polygon activePolygon;                        // Polygon that user has clicked with the mouse
     private Polygon oldactivePolygon;
     private boolean hadUserClickedOnHex = false;
@@ -46,23 +45,23 @@ public class gameController {
 
         // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
-        polygons = new HashMap<Polygon, String>();
-        drawnGameObjects  = new HashMap<BuyableItem, String>();
+        polygons = new HashMap<String, Polygon>(); // reimplemented HashMap class
+        drawnGameObjects  = new HashMap<String, BuyableItem>();
         drawHexMap();   // draws map
         setUpTimer();
 
         // By default make activePolygon point to the first polygon object
-        Map.Entry<Polygon,String> entry = polygons.entrySet().iterator().next(); // iterator
-        activePolygon = oldactivePolygon = entry.getKey();                       // get first value
+        Map.Entry<String, Polygon> entry = polygons.entrySet().iterator().next();  // iterator
+        activePolygon = oldactivePolygon = entry.getValue();                       // get first value
 
         updateLabels(); // updates labels
 
         // Initialize mouse event for each polygon (Hexagon)
-        for(final Map.Entry<Polygon, String> hex : polygons.entrySet()){
-            hex.getKey().setOnMouseClicked(event -> {      // Run once a player clicks on any hex tile
+        for(final Map.Entry<String, Polygon> hex : polygons.entrySet()){
+            hex.getValue().setOnMouseClicked(event -> {      // Run once a player clicks on any hex tile
                 // Find corresponding Hex tile and change its color
-                Hex hexTile = findHex(hex.getValue());     // Get Hex object
-                Polygon polygon = hex.getKey();            // Get Polygon from hex map
+                Hex hexTile = findHex(hex.getKey());         // Get Hex object
+                Polygon polygon = hex.getValue();            // Get Polygon from hex map
 
                 activePolygon.setStroke(Color.BLACK);      // reset stroke of the previous polygon
                 activePolygon = polygon;                   // we get a new active corresponding polygon
@@ -73,7 +72,8 @@ public class gameController {
                     oldactivePolygon.setStroke(Color.GREENYELLOW);
 
                     // Get that previous hex:
-                    Hex oldHex = findHex( polygons.get( oldactivePolygon ) );
+                    Hex oldHex = findHex(getKeyFromPolygonsMap(oldactivePolygon));
+
                     if(oldHex == null){
                         System.out.println("oldHex: null");
                     }else{
@@ -81,7 +81,7 @@ public class gameController {
                     }
 
                     // Get that previous item:
-                    BuyableItem oldItem = findBuyableItem( oldHex.getID() );
+                    BuyableItem oldItem = drawnGameObjects.get( oldHex.getID() );
                     if(oldItem == null){
                         System.out.println("oldItem: null");
                     }else{
@@ -89,7 +89,7 @@ public class gameController {
                     }
 
                     // Get item which we want to conquer
-                    BuyableItem itemToBeConquered = findBuyableItem( hexTile.getID() );
+                    BuyableItem itemToBeConquered = drawnGameObjects.get( hexTile.getID() );
                     if(itemToBeConquered == null){
                         System.out.println("itemToBeConquered: null");
                     }else{
@@ -133,6 +133,16 @@ public class gameController {
         }
     }
 
+    // Gets key from Polygon's map by providing a value _value
+    private String getKeyFromPolygonsMap(Polygon _value) {
+        for (Map.Entry<String, Polygon> entry : polygons.entrySet()) {
+            if (entry.getValue().equals(_value)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
     private void setUpTimer(){
         // Create a timer and schedule it to run every 1 second
         timer = new Timer();
@@ -157,7 +167,7 @@ public class gameController {
                 1000);  // run every seconds
     }
 
-    public static void cancelTimer(){
+    static void cancelTimer(){
         if(timer != null)
             timer.cancel();
     }
@@ -204,7 +214,7 @@ public class gameController {
         // Remove item from the game:
         itemToPop.getLabel().toBack();                          // just in case if something goes horribly wrong
         drawingArea.getChildren().remove(itemToPop.getLabel()); // remove item from drawingArea
-        drawnGameObjects.remove(itemToPop);                     // remove item from drawnGameObjects map
+        drawnGameObjects.remove(itemToPop.getID());                     // remove item from drawnGameObjects map
     }
 
     private void highlighActiveHex(){
@@ -245,17 +255,19 @@ public class gameController {
         GameBoard.m_turnCount++;
         updateLabels();
 
+        //activePolygon = null;
+
         // Increase game difficulty every 3 turns if certain conditions are met
         if(GameBoard.m_turnCount % 3 == 0)
             increaseDifficulty();
 
         // Reset active polygon selection
-        for(final Map.Entry<Polygon, String> pol : polygons.entrySet())
-            pol.getKey().setStroke(Color.BLACK); // reset stroke of the previous polygon
+        for(final Map.Entry<String, Polygon> pol : polygons.entrySet())
+            pol.getValue().setStroke(Color.BLACK); // reset stroke of the previous polygon
 
         // Reset movement count of all game items
-        for(final Map.Entry<BuyableItem, String> drawnObj : drawnGameObjects.entrySet()){
-            drawnObj.getKey().resetMovementCountToDefault();
+        for(final Map.Entry<String, BuyableItem> drawnObj : drawnGameObjects.entrySet()){
+            drawnObj.getValue().resetMovementCountToDefault();
         }
 
         // Reset timer:
@@ -296,7 +308,7 @@ public class gameController {
         }
 
         // Find hex that activePolygon points to
-        Hex hex = findHex( polygons.get( activePolygon ) ); // polygons.get( activePolygon ) returns String m_ID
+        Hex hex = findHex(getKeyFromPolygonsMap(activePolygon));
 
         if(hex != null && !state.equals(HexState.EMPTY)){
             // Change hex tile attributes to new ones:
@@ -318,16 +330,57 @@ public class gameController {
                 item = new WarriorItem(hex.getCoords(), hex.getID(), getCurrentPlayerObj().getName());
 
             // Add that object to the drawnObjects map:
-            drawnGameObjects.put(item, hex.getID());            // add game object to map
+            drawnGameObjects.put(hex.getID(), item);            // add game object to map
             drawingArea.getChildren().addAll(item.getLabel());  // add it to pane
         }
     }
 
+    // Finds and returns a hex with the provided coordinates
+    private Hex getHexWithTheseCoordinates(double _x, double _y){
+        ArrayList<Hex> hexMap = gameBoard.getHexMap();
+        for(Hex hex : hexMap){
+            if(hex.getCoords().getX() == _x && hex.getCoords().getY() == _y)
+                return hex;
+        }
+        return null;
+    }
+
+    // Check if such neighbor exists and if it has the same color as present player
+    private boolean checkNeighborAndColor(double _x, double _y){
+        Hex neighbor = getHexWithTheseCoordinates(_x, _y);
+
+        // if distance between neighbor hex and current hex is equal to 1 hex unit,
+        // then it's a viable move
+        return neighbor != null && neighbor.getColor().equals( getCurrentPlayerObj().getColor() );
+    }
+
+    // You've got currHex
+    // We'll check if whether a single one of its neighbors has the same color
+    private boolean doDiagonalNeighborsHaveTheSameColor(Hex currHex){
+        // Neighbor 1:
+        if(checkNeighborAndColor(currHex.getCoords().getX() - 18, currHex.getCoords().getY() - 31))
+            return true;
+        // Neighbor 2:
+        if(checkNeighborAndColor(currHex.getCoords().getX() + 18, currHex.getCoords().getY() - 31))
+            return true;
+        // Neighbor 3:
+        if(checkNeighborAndColor(currHex.getCoords().getX() - 36, currHex.getCoords().getY()))
+            return true;
+        // Neighbor 4:
+        if(checkNeighborAndColor(currHex.getCoords().getX() + 36, currHex.getCoords().getY()))
+            return true;
+        // Neighbor 5:
+        if(checkNeighborAndColor(currHex.getCoords().getX() - 18, currHex.getCoords().getY() + 31))
+            return true;
+        // Neighbor 6:
+        return checkNeighborAndColor(currHex.getCoords().getX() + 18, currHex.getCoords().getY() + 31);
+    }
+
     @FXML
     private void onBuyTowerBtnClicked(ActionEvent event){
-        Hex currHex = findHex( polygons.get( activePolygon ) );
+        Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
-        if(getCurrentPlayerObj().getMoney() >= TowerItem.m_cost && currHex.getState().equals(HexState.EMPTY)){
+        if(getCurrentPlayerObj().getMoney() >= TowerItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
             addDrawnObjectToMap(HexState.TOWER);
             getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() - TowerItem.m_cost );
             updateLabels();
@@ -338,9 +391,9 @@ public class gameController {
 
     @FXML
     private void onBuyPeasantBtnClicked(ActionEvent event){
-        Hex currHex = findHex( polygons.get( activePolygon ) );
+        Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
-        if(getCurrentPlayerObj().getMoney() >= PeasantItem.m_cost && currHex.getState().equals(HexState.EMPTY)){
+        if(getCurrentPlayerObj().getMoney() >= PeasantItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
             addDrawnObjectToMap(HexState.SOLDIER_1);
             getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() - PeasantItem.m_cost );
             updateLabels();
@@ -351,9 +404,9 @@ public class gameController {
 
     @FXML
     private void onBuySlodierBtnClicked(ActionEvent event){
-        Hex currHex = findHex( polygons.get( activePolygon ) );
+        Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
-        if(getCurrentPlayerObj().getMoney() >= SoldierItem.m_cost && currHex.getState().equals(HexState.EMPTY)){
+        if(getCurrentPlayerObj().getMoney() >= SoldierItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
             addDrawnObjectToMap(HexState.SOLDIER_2);
             getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() - SoldierItem.m_cost );
             updateLabels();
@@ -364,9 +417,9 @@ public class gameController {
 
     @FXML
     private void onBuyWarriorBtnClicked(ActionEvent event){
-        Hex currHex = findHex( polygons.get( activePolygon ) );
+        Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
-        if(getCurrentPlayerObj().getMoney() >= WarriorItem.m_cost && currHex.getState().equals(HexState.EMPTY)){
+        if(getCurrentPlayerObj().getMoney() >= WarriorItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
             addDrawnObjectToMap(HexState.SOLDIER_3);
             getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() - WarriorItem.m_cost );
             updateLabels();
@@ -383,16 +436,6 @@ public class gameController {
         for(Hex m_Hex : hexMap){
             if(m_Hex.getID().equals(key))
                 return m_Hex;
-        }
-        return null;
-    }
-
-    private BuyableItem findBuyableItem(String key){
-        // Go through map of drawn game objects and search for key
-        for(final Map.Entry<BuyableItem, String> drawnObj : drawnGameObjects.entrySet()){
-            if(drawnObj.getKey().getID().equals(key)){ // we found key
-                return drawnObj.getKey();              // return object
-            }
         }
         return null;
     }
@@ -415,7 +458,7 @@ public class gameController {
             m_polygon.setStroke(Color.BLACK);
             m_polygon.setStrokeWidth(1.1);
 
-            polygons.put(m_polygon, m_hex.getID());
+            polygons.put(m_hex.getID(), m_polygon);
             drawingArea.getChildren().addAll(m_polygon);
 
             // Primary players' hex tiles
@@ -426,10 +469,8 @@ public class gameController {
                 if(m_hex.getState().equals(HexState.HOUSE)){
                     // Add game object to map
                     BuyableItem hut = new HouseItem(m_hex.getCoords(), m_hex.getID(), getCurrentPlayerObj().getName());  // create a hut image
-                    drawnGameObjects.put(hut, m_hex.getID());                                                            // add game object to map
+                    drawnGameObjects.put(m_hex.getID(), hut);                                                            // add game object to map
                     drawingArea.getChildren().addAll(hut.getLabel());                                                    // add it to pane
-                    m_hex.changeOwner(getCurrentPlayerObj().getName());    // change owner
-                    m_hex.changeColor( getCurrentPlayerObj().getColor() ); // change color
                 }
             }
         }
