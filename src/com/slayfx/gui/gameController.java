@@ -7,12 +7,14 @@ import com.slayfx.logic.tiles.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.SubScene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.control.Button;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class gameController {
     private GameBoard gameBoard;                          // Game board
@@ -45,7 +47,12 @@ public class gameController {
 
         // Initialize game board and map
         gameBoard = new GameBoard(500, 500);
-        polygons = new HashMap<String, Polygon>(); // reimplemented HashMap class
+        //if(!gameBoard.isOkToContinueGame()){
+            //System.out.println("Quitting the game...");
+          //  Main.getInstance().stop();
+        //}
+
+        polygons = new HashMap<String, Polygon>();
         drawnGameObjects  = new HashMap<String, BuyableItem>();
         drawHexMap();   // draws map
         setUpTimer();
@@ -56,8 +63,8 @@ public class gameController {
 
         updateLabels(); // updates labels
 
-        // Initialize mouse event for each polygon (Hexagon)
-        for(final Map.Entry<String, Polygon> hex : polygons.entrySet()){
+        // Initialize mouse click event for each polygon (Hexagon)
+        for(final Map.Entry<String, Polygon> hex : polygons.entrySet()) {
             hex.getValue().setOnMouseClicked(event -> {      // Run once a player clicks on any hex tile
                 // Find corresponding Hex tile and change its color
                 Hex hexTile = findHex(hex.getKey());         // Get Hex object
@@ -68,63 +75,105 @@ public class gameController {
 
                 highlighActiveHex();                       // highlight it
 
-                if(hadUserClickedOnHex){
+                if (hadUserClickedOnHex) {
                     oldactivePolygon.setStroke(Color.GREENYELLOW);
 
                     // Get that previous hex:
                     Hex oldHex = findHex(getKeyFromPolygonsMap(oldactivePolygon));
 
-                    if(oldHex == null){
+                    if (oldHex == null) {
                         System.out.println("oldHex: null");
-                    }else{
+                    } else {
                         System.out.println("oldHex: " + oldHex.getOwner() + " " + oldHex.getState() + " key=" + oldHex.getID());
                     }
 
                     // Get that previous item:
-                    BuyableItem oldItem = drawnGameObjects.get( oldHex.getID() );
-                    if(oldItem == null){
-                        System.out.println("oldItem: null");
-                    }else{
+                    BuyableItem oldItem = drawnGameObjects.get(oldHex.getID());
+                    if (oldItem == null) {
+                        System.out.println("oldItem: null");                            // TODO: you get NULL !!!
+                    } else {
                         System.out.println("oldItem: " + oldItem.getOwner());
                     }
 
                     // Get item which we want to conquer
-                    BuyableItem itemToBeConquered = drawnGameObjects.get( hexTile.getID() );
-                    if(itemToBeConquered == null){
+                    BuyableItem itemToBeConquered = drawnGameObjects.get(hexTile.getID());
+                    if (itemToBeConquered == null) {
                         System.out.println("itemToBeConquered: null");
-                    }else{
+                    } else {
                         System.out.println("itemToBeConquered: " + itemToBeConquered.getOwner());
                     }
 
                     System.out.println("\n");
 
-                    if(oldHex != null && oldItem != null && oldHex.getOwner().equals( getCurrentPlayerObj().getName() ) && oldItem.getOwner().equals( getCurrentPlayerObj().getName() )){
+
+                    /* NEW CODE */
+                    /*if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName())
+                            && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
                         // Checks if it's a valid move
-                        if( oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move( hexTile ) ){ // <-- move it where activePolygon points to
+                        if (oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move(hexTile)) { // <-- move it where activePolygon points to
                             oldItem.decreaseCurrMovementCount();
 
                             // Remove that item from the game board
-                            if(itemToBeConquered != null){
+                            if (itemToBeConquered != null) {
+                                if (itemToBeConquered instanceof HouseItem) {                              // we just conquered player's home tile
+                                    if (gameBoard.getActivePlayers().remove(itemToBeConquered.getOwner())) { // eliminate that player
+
+                                        for (int i = 0; i < gameBoard.getPlayersList().size(); i++)
+                                            if (gameBoard.getPlayersList().get(i).getName().equals(itemToBeConquered.getOwner())) {
+                                                gameBoard.getPlayersList().get(i).endLife();
+                                                gameBoard.getPlayersList().remove(i);
+                                                break;
+                                            }
+
+                                        System.out.println("Player " + itemToBeConquered.getOwner() + " just got eliminated!");
+                                    }
+                                }
                                 popFromDrawnGameObjects(itemToBeConquered); // pop it from of drawnGameObjects map
                             }
 
                             oldItem.getLabel().toFront();
 
                             // reassign attributes to the new hex:
-                            hexTile.changeState( oldHex.getState() );                                           // change state of a hex
-                            oldHex.changeState( HexState.EMPTY );
-                            hexTile.changeOwner( getCurrentPlayerObj().getName() );
-                            hexTile.changeColor( getCurrentPlayerObj().getColor() );              // change color
+                            hexTile.changeState(oldHex.getState());                                           // change state of a hex
+                            oldHex.changeState(HexState.EMPTY);
+                            hexTile.changeOwner(getCurrentPlayerObj().getName());
+                            hexTile.changeColor(getCurrentPlayerObj().getColor());              // change color
+                            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());    // apply new color
+
+                            oldactivePolygon = activePolygon;
+                        }
+                    }*/
+
+                    if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName()) && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
+                        // Checks if it's a valid move
+                        if (oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move(hexTile)) { // <-- move it where activePolygon points to
+                            oldItem.decreaseCurrMovementCount();
+
+                            // Remove that item from the game board
+                            if (itemToBeConquered != null) {
+                                popFromDrawnGameObjects(itemToBeConquered); // pop it from of drawnGameObjects map
+                                // TODO: you cant conquire your own items
+                            }
+
+                            oldItem.getLabel().toFront();
+
+                            // reassign attributes to the new hex:
+                            hexTile.changeState(oldHex.getState());                                           // change state of a hex
+                            oldHex.changeState(HexState.EMPTY);
+                            hexTile.changeOwner(getCurrentPlayerObj().getName());
+                            hexTile.changeColor(getCurrentPlayerObj().getColor());              // change color
                             paintPolygon(activePolygon, getCurrentPlayerObj().getColor());    // apply new color
 
                             oldactivePolygon = activePolygon;
                         }
                     }
+
+
                     hadUserClickedOnHex = false;
                 }
 
                 // If this isn't an empty hex, then you can move its content
-                if(!hexTile.getState().equals(HexState.EMPTY)){
+                if (!hexTile.getState().equals(HexState.EMPTY)) {
                     oldactivePolygon = activePolygon;
                     oldactivePolygon.setStroke(Color.GREENYELLOW);
                     hadUserClickedOnHex = true;
@@ -134,12 +183,15 @@ public class gameController {
     }
 
     // Gets key from Polygon's map by providing a value _value
-    private String getKeyFromPolygonsMap(Polygon _value) {
-        for (Map.Entry<String, Polygon> entry : polygons.entrySet()) {
-            if (entry.getValue().equals(_value)) {
+    private String getKeyFromPolygonsMap(Polygon _value){
+        Set<Map.Entry<String, Polygon>> mapSet = polygons.entrySet();
+        for(Map.Entry<String, Polygon> entry : mapSet){
+            if(entry.getValue().equals(_value)){
+                System.out.println("Found key : " + entry.getKey());
                 return entry.getKey();
             }
         }
+        System.out.println("Key not found");
         return null;
     }
 
@@ -249,30 +301,77 @@ public class gameController {
     @FXML
     private void onNextTurnBtnClicked(){
         System.out.println("Next turn!");
+
+        onNextTurnKillUnits();
+        onNextTurnWarriorsLocation();
+        onNextTurnMoneyInCirculation();
+
         getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() + 10 );
         gameBoard.changeCurrPlayerIndex(gameBoard.getCurrPlayerIndex() + 1);
 
         GameBoard.m_turnCount++;
         updateLabels();
 
-        //activePolygon = null;
-
         // Increase game difficulty every 3 turns if certain conditions are met
         if(GameBoard.m_turnCount % 3 == 0)
             increaseDifficulty();
 
         // Reset active polygon selection
-        for(final Map.Entry<String, Polygon> pol : polygons.entrySet())
-            pol.getValue().setStroke(Color.BLACK); // reset stroke of the previous polygon
+        polygons.values().parallelStream().forEach(e -> e.setStroke(Color.BLACK));
 
         // Reset movement count of all game items
-        for(final Map.Entry<String, BuyableItem> drawnObj : drawnGameObjects.entrySet()){
-            drawnObj.getValue().resetMovementCountToDefault();
-        }
+        drawnGameObjects.values().parallelStream().forEach(e -> e.resetMovementCountToDefault());
 
         // Reset timer:
         timeElapsed.setMinutes(1);
         timeElapsed.setSeconds(0);
+    }
+
+    // Kill all player's units if they cant be fed anymore
+    private void onNextTurnKillUnits(){
+        List<Player> playersStream = gameBoard.getPlayersList().stream()     // convert list to stream
+                .filter(player -> player.getMoney() <= 0)                    // a player has got no money
+                .collect(Collectors.toList());                               // collect the output and convert streams to a List
+
+        playersStream.forEach( this::killAllPlayersUnits );
+    }
+
+    private void onNextTurnWarriorsLocation(){
+        // Using parallel stream to find location of warriors (the most powerful unit)
+        // if the game board consists of 1000 hex tiles, it's a fast approach to process such data
+        gameBoard.getHexMap().parallelStream()
+                .filter(e -> e.getState() == HexState.SOLDIER_3)
+                .forEach(e -> System.out.println("warrior found at : " + e.getID()));
+    }
+
+    private void onNextTurnMoneyInCirculation(){
+        // stream().map() lets you convert an object to something else
+        // stream().reduce() takes a sequence of input elements and combines them into a single result
+        // Money of all players combined:
+        Integer moneyOfAllPLayers = gameBoard.getPlayersList().stream()
+                .map(e -> e.getMoney())
+                .reduce(0, Integer::sum); // calculate money from 0
+        System.out.println("Money circulation in the game: " + moneyOfAllPLayers);
+    }
+
+    private void killAllPlayersUnits(Player player){
+        // Kill all the units if they were bought under same player name
+        // drawnGameObjects.entrySet().removeIf(e -> e.getValue().getOwner().equals(player.getName()));
+        for(Iterator<BuyableItem> it = drawnGameObjects.values().iterator(); it.hasNext();){
+            BuyableItem itemToPop = it.next();
+
+            if(itemToPop.getOwner().equals(player.getName()) && itemToPop.getMaxMovementCount() > 0) {
+                itemToPop.decreaseCount();
+                itemToPop.getLabel().toBack();
+                drawingArea.getChildren().remove(itemToPop.getLabel());
+
+                Hex hex = findHex( itemToPop.getID() );
+                if(hex != null)
+                    hex.changeState(HexState.EMPTY);
+
+                it.remove();
+            }
+        }
     }
 
     // Increase game difficulty by increasing prices
@@ -386,6 +485,9 @@ public class gameController {
             updateLabels();
             TowerItem.m_count++;
             System.out.println("Curr money: " + Integer.toString(getCurrentPlayerObj().getMoney()) + "  Cost: " + Integer.toString(TowerItem.m_cost));
+
+            // Store history of bought items:
+            getCurrentPlayerObj().getItemsHistory().add("Tower"); // the user has just bought a tower
         }
     }
 
@@ -399,6 +501,9 @@ public class gameController {
             updateLabels();
             PeasantItem.m_count++;
             System.out.println("Curr money: " + Integer.toString(getCurrentPlayerObj().getMoney()) + "  Cost: " + Integer.toString(PeasantItem.m_cost));
+
+            // Store history of bought items:
+            getCurrentPlayerObj().getItemsHistory().add("Peasant"); // the user has just bought a peasant unit
         }
     }
 
@@ -412,6 +517,9 @@ public class gameController {
             updateLabels();
             SoldierItem.m_count++;
             System.out.println("Curr money: " + Integer.toString(getCurrentPlayerObj().getMoney()) + "  Cost: " + Integer.toString(SoldierItem.m_cost));
+
+            // Store history of bought items:
+            getCurrentPlayerObj().getItemsHistory().add("Soldier"); // the user has just bought a soldier unit
         }
     }
 
@@ -425,6 +533,9 @@ public class gameController {
             updateLabels();
             WarriorItem.m_count++;
             System.out.println("Curr money: " + Integer.toString(getCurrentPlayerObj().getMoney()) + "  Cost: " + Integer.toString(WarriorItem.m_cost));
+
+            // Store history of bought items:
+            getCurrentPlayerObj().getItemsHistory().add("Warrior"); // the user has just bought a warrrior unit
         }
     }
 

@@ -6,8 +6,8 @@ import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.HexColor;
 import com.slayfx.logic.tiles.HexState;
 import com.slayfx.gui.mapChooseController;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 public class GameBoard implements Board {
@@ -15,17 +15,21 @@ public class GameBoard implements Board {
     private final int m_height;
     private ArrayList<Hex> hexMap;
     private ArrayList<Player> m_players; // holds players' data
+    private HashSet<String> m_activePlayers; // to keep track of active players
     private int m_currectPlaerNum; // index of the current player
     public static int m_turnCount = 0;
+    private boolean isOkToContinueGame;
 
     // Constructor
     public GameBoard(int width, int height){
         hexMap = new ArrayList<Hex>();
         m_players = new ArrayList<Player>();
+        m_activePlayers = new HashSet<String>();
 
         m_currectPlaerNum = 0;
         this.m_width = width;
         this.m_height = height;
+        isOkToContinueGame = true;
 
         newGame();
     }
@@ -38,20 +42,16 @@ public class GameBoard implements Board {
     }
 
     private void loadMap(){
-        hexMap = MapReader.read("../res/maps/" + mapChooseController.getChosenMap());
+        String mapLocation = "../res/maps/" + mapChooseController.getChosenMap();
+        hexMap = MapReader.read(mapLocation);
     }
 
     private HexColor getRandomColor(){
         return HexColor.values()[new Random().nextInt(HexColor.values().length - 1)]; // random color; omitting HexColor.EMPTY
     }
 
-    private boolean hasAnoteherPlayerHaveThisColor(int initializedPlayersSoFar, HexColor color){
-        for(int pl_id = 0; pl_id<initializedPlayersSoFar; pl_id++){ // iterate though initialized players
-            if(m_players.get(pl_id).getColor().equals(color)){      // the color appears to be used by another player
-                return true;
-            }
-        }
-        return false;
+    private boolean hasAnoteherPlayerHaveThisColor(HexColor color){
+        return m_players.stream().anyMatch(player -> player.getColor().equals(color));
     }
 
     private HexColor getTotallyRandomColor(int initializedPlayersSoFar) {
@@ -62,7 +62,7 @@ public class GameBoard implements Board {
 
         // Loop as long as we find unique color
         // NOTE: only works with up to 5 players (we have 5 different colors)
-        while(hasAnoteherPlayerHaveThisColor(initializedPlayersSoFar, color))
+        while(hasAnoteherPlayerHaveThisColor(color))
             color = getRandomColor();
 
         return color;
@@ -71,6 +71,7 @@ public class GameBoard implements Board {
     private void createPlayers(int count){
         for(int player_count = 0; player_count < count; player_count++){
             m_players.add(new Player("player_" + String.valueOf(player_count), getTotallyRandomColor(player_count)));
+            m_activePlayers.add( m_players.get(player_count).getName() );
         }
     }
 
@@ -91,12 +92,23 @@ public class GameBoard implements Board {
     public int getCurrPlayerIndex(){ return m_currectPlaerNum; }
 
     public void changeCurrPlayerIndex(int index){
-        if (index >= m_players.size()) {
-            m_currectPlaerNum = 0;
-        } else {
-            m_currectPlaerNum = index;
+        if (index >= m_players.size())
+            index = 0;
+        m_currectPlaerNum = index;
+
+        // Check whether such player hasn't been removed from active players list
+        if (m_players.get(m_currectPlaerNum).isDead() && !m_activePlayers.contains(m_players.get(m_currectPlaerNum).getName())) {
+            changeCurrPlayerIndex(index + 1);
         }
     }
 
     public ArrayList<Player> getPlayersList(){ return m_players; }
+
+    public boolean isOkToContinueGame() {
+        return isOkToContinueGame;
+    }
+
+    public HashSet<String> getActivePlayers(){
+        return m_activePlayers;
+    }
 }
