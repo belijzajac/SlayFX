@@ -18,10 +18,13 @@ public class WarriorItem extends BuyableItem {
     public boolean move(Hex hex){
         // Warriors can occupy empty hex tiles, or kill peasants, or kill soldiers, or kill towers
         if(hex.getState().equals(HexState.EMPTY) || hex.getState().equals(HexState.SOLDIER_1)
-                || hex.getState().equals(HexState.SOLDIER_2) || hex.getState().equals(HexState.TOWER) ){
+                || hex.getState().equals(HexState.SOLDIER_2) || hex.getState().equals(HexState.TOWER)
+                || hex.getState().equals(HexState.HOUSE))
+        {
             this.setCoords(new Point( hex.getCoords().getX() - 13, hex.getCoords().getY() - 13 )); // move this item to hex
             this.setID(hex.getID());
             m_label.relocate( getCoords().getX(), getCoords().getY() );
+
             return true;
         }
         return false;

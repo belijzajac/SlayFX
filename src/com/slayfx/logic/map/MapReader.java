@@ -1,8 +1,8 @@
 package com.slayfx.logic.map;
 
+import com.slayfx.logic.exception.MapsFileException;
 import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.HexColor;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,13 +24,33 @@ public final class MapReader {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null){
-                // Parse line
-                String[] parts = line.split(";", 2);
+                try {
+                    // 1) no ';' that separates coordinates
+                    if (!line.contains(";")) {
+                        throw new MapsFileException("Map Load Error: Missing a symbol ';' separating coordinates");
+                    }
 
-                int x_ = Integer.valueOf(parts[0]);
-                int y_ = Integer.valueOf(parts[1]);
-                hexMap.add(new Hex(HexColor.EMPTY, x_, y_));
-            }
+                    // 3) Coordinates are ONLY integer numbers separated by a ';' symbol
+                    for (int i = 0; i < line.length(); i++) {
+                        if (!Character.isDigit(line.charAt(i)) && line.charAt(i) != ';') {
+                            throw new MapsFileException("Map Load Error: Illegal formatting of coordinates: expected integer number and ';'");
+                        }
+                    }
+
+                    String[] parts = line.split(";", 2);
+
+                    int x_ = Integer.valueOf(parts[0]);
+                    int y_ = Integer.valueOf(parts[1]);
+                    hexMap.add(new Hex(HexColor.EMPTY, x_, y_));
+
+                    // prints map's curr size:
+                    //System.out.println(hexMap.size());
+
+                }catch (MapsFileException e) {
+                    System.out.println(e.getMessage());
+                }
+
+            } // end while read
             bufferedReader.close();
         }
         catch (FileNotFoundException ex){
