@@ -7,7 +7,7 @@ import com.slayfx.logic.tiles.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.SubScene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -23,6 +23,7 @@ public class gameController {
     private Polygon activePolygon;                        // Polygon that user has clicked with the mouse
     private Polygon oldactivePolygon;
     private boolean hadUserClickedOnHex = false;
+    private boolean hasGameEnded = false;
 
     // Timer:
     private static Timer timer;
@@ -90,12 +91,14 @@ public class gameController {
                     // Get that previous item:
                     BuyableItem oldItem = drawnGameObjects.get(oldHex.getID());
                     if (oldItem == null) {
-                        System.out.println("oldItem: null");                            // TODO: you get NULL !!!
+                        System.out.println("oldItem: null");
                     } else {
                         System.out.println("oldItem: " + oldItem.getOwner());
                     }
 
                     // Get item which we want to conquer
+                    // TODO: oldItem and OldHex is what current player has in possession
+                    // TODO: itemToBeConquired - is what we step on with OldItem
                     BuyableItem itemToBeConquered = drawnGameObjects.get(hexTile.getID());
                     if (itemToBeConquered == null) {
                         System.out.println("itemToBeConquered: null");
@@ -105,66 +108,62 @@ public class gameController {
 
                     System.out.println("\n");
 
+                    // Abstract checks
+                    if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName()) && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
 
-                    /* NEW CODE */
-                    /*if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName())
-                            && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
                         // Checks if it's a valid move
-                        if (oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move(hexTile)) { // <-- move it where activePolygon points to
-                            oldItem.decreaseCurrMovementCount();
+                        if (oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile)) {
+                            boolean killItselfScenario = false;
 
-                            // Remove that item from the game board
-                            if (itemToBeConquered != null) {
-                                if (itemToBeConquered instanceof HouseItem) {                              // we just conquered player's home tile
-                                    if (gameBoard.getActivePlayers().remove(itemToBeConquered.getOwner())) { // eliminate that player
+                            // Own player can't kill itself
+                            if(itemToBeConquered != null && itemToBeConquered.getOwner().equals( oldItem.getOwner() ))
+                                killItselfScenario = true;
 
-                                        for (int i = 0; i < gameBoard.getPlayersList().size(); i++)
-                                            if (gameBoard.getPlayersList().get(i).getName().equals(itemToBeConquered.getOwner())) {
-                                                gameBoard.getPlayersList().get(i).endLife();
-                                                gameBoard.getPlayersList().remove(i);
+                            if(!killItselfScenario && oldItem.move(hexTile)){ // <-- move it where activePolygon points to
+
+                                oldItem.decreaseCurrMovementCount();
+
+                                // Update an element in HashMap (delete and put)
+                                // Because we're about to change its associative key
+                                drawnGameObjects.remove(oldHex.getID());
+
+                                // Remove that item from the game board
+                                if (itemToBeConquered != null) {
+                                    if (itemToBeConquered instanceof HouseItem) {                              // we just conquered player's home tile
+                                        for(Player playerToBeDeleted : gameBoard.getPlayersList()){
+                                            if (!playerToBeDeleted.isDead() && playerToBeDeleted.getName().equals(itemToBeConquered.getOwner())) {
+                                                System.out.println("~~ Killing " + playerToBeDeleted.getName() + "'s units...... ~~");
+                                                killAllPlayersUnits(playerToBeDeleted);
+                                                playerToBeDeleted.endLife();
+                                                gameBoard.getPlayersList().remove(playerToBeDeleted);
                                                 break;
                                             }
-
-                                        System.out.println("Player " + itemToBeConquered.getOwner() + " just got eliminated!");
+                                        }
                                     }
+                                    popFromDrawnGameObjects(itemToBeConquered); // pop it from of drawnGameObjects map
                                 }
-                                popFromDrawnGameObjects(itemToBeConquered); // pop it from of drawnGameObjects map
+
+                                drawnGameObjects.put(oldItem.getID(), oldItem);
+                                oldItem.getLabel().toFront();
+
+                                // reassign attributes to the new hex:
+                                hexTile.changeState(oldHex.getState());                                           // change state of a hex
+                                oldHex.changeState(HexState.EMPTY);
+                                oldHex.changeColor(oldHex.getColor());
+                                hexTile.changeOwner(oldHex.getOwner());
+                                hexTile.changeColor(oldHex.getColor());              // change color
+                                paintPolygon(activePolygon, oldHex.getColor());    // apply new color
+
+                                oldactivePolygon = activePolygon;
+
+                                // Game win scenario:
+                                if(gameBoard.getPlayersList().size() == 1 && !hasGameEnded){
+                                    System.out.println(oldItem.getOwner() + " WON! ");
+                                    gameWonMessage( oldItem.getOwner() );
+
+                                    hasGameEnded = true; // will not show the message again
+                                }
                             }
-
-                            oldItem.getLabel().toFront();
-
-                            // reassign attributes to the new hex:
-                            hexTile.changeState(oldHex.getState());                                           // change state of a hex
-                            oldHex.changeState(HexState.EMPTY);
-                            hexTile.changeOwner(getCurrentPlayerObj().getName());
-                            hexTile.changeColor(getCurrentPlayerObj().getColor());              // change color
-                            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());    // apply new color
-
-                            oldactivePolygon = activePolygon;
-                        }
-                    }*/
-
-                    if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName()) && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
-                        // Checks if it's a valid move
-                        if (oldItem.getCurrMovementCount() > 0 && canMoveDiagonally(oldHex, hexTile) && oldItem.move(hexTile)) { // <-- move it where activePolygon points to
-                            oldItem.decreaseCurrMovementCount();
-
-                            // Remove that item from the game board
-                            if (itemToBeConquered != null) {
-                                popFromDrawnGameObjects(itemToBeConquered); // pop it from of drawnGameObjects map
-                                // TODO: you cant conquire your own items
-                            }
-
-                            oldItem.getLabel().toFront();
-
-                            // reassign attributes to the new hex:
-                            hexTile.changeState(oldHex.getState());                                           // change state of a hex
-                            oldHex.changeState(HexState.EMPTY);
-                            hexTile.changeOwner(getCurrentPlayerObj().getName());
-                            hexTile.changeColor(getCurrentPlayerObj().getColor());              // change color
-                            paintPolygon(activePolygon, getCurrentPlayerObj().getColor());    // apply new color
-
-                            oldactivePolygon = activePolygon;
                         }
                     }
 
@@ -266,7 +265,8 @@ public class gameController {
         // Remove item from the game:
         itemToPop.getLabel().toBack();                          // just in case if something goes horribly wrong
         drawingArea.getChildren().remove(itemToPop.getLabel()); // remove item from drawingArea
-        drawnGameObjects.remove(itemToPop.getID());                     // remove item from drawnGameObjects map
+        drawnGameObjects.remove(itemToPop.getID());             // remove item from drawnGameObjects map
+        itemToPop = null;                                       // call a garbage collector on it
     }
 
     private void highlighActiveHex(){
@@ -306,8 +306,8 @@ public class gameController {
         onNextTurnWarriorsLocation();
         onNextTurnMoneyInCirculation();
 
-        getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() + 10 );
         gameBoard.changeCurrPlayerIndex(gameBoard.getCurrPlayerIndex() + 1);
+        getCurrentPlayerObj().setMoney( getCurrentPlayerObj().getMoney() + 10 );
 
         GameBoard.m_turnCount++;
         updateLabels();
@@ -579,7 +579,7 @@ public class gameController {
                 // Do stuff WHEN the game starts (initializes default players)
                 if(m_hex.getState().equals(HexState.HOUSE)){
                     // Add game object to map
-                    BuyableItem hut = new HouseItem(m_hex.getCoords(), m_hex.getID(), getCurrentPlayerObj().getName());  // create a hut image
+                    BuyableItem hut = new HouseItem(m_hex.getCoords(), m_hex.getID(), m_hex.getOwner());  // create a hut image
                     drawnGameObjects.put(m_hex.getID(), hut);                                                            // add game object to map
                     drawingArea.getChildren().addAll(hut.getLabel());                                                    // add it to pane
                 }
@@ -612,5 +612,13 @@ public class gameController {
                 polygon.setFill(Color.LIGHTGRAY);
                 break;
         }
+    }
+
+    private void gameWonMessage(final String userId){
+        Alert alertDialog = new Alert(Alert.AlertType.INFORMATION);
+        alertDialog.setTitle("The game has ended");
+        alertDialog.setHeaderText(null);
+        alertDialog.setContentText(userId + " has won!");
+        alertDialog.show();
     }
 }
