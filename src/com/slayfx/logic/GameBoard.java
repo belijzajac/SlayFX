@@ -89,7 +89,11 @@ public class GameBoard implements Board {
 
     public ArrayList<Hex> getHexMap(){ return hexMap; }
 
-    public int getCurrPlayerIndex(){ return m_currectPlaerNum; }
+    public int getCurrPlayerIndex(){
+        if(m_currectPlaerNum >= m_players.size())
+            changeCurrPlayerIndex(0);
+
+        return m_currectPlaerNum; }
 
     public void changeCurrPlayerIndex(int index){
         if (index >= m_players.size())
@@ -97,7 +101,7 @@ public class GameBoard implements Board {
         m_currectPlaerNum = index;
 
         // Check whether such player hasn't been removed from active players list
-        if (m_players.get(m_currectPlaerNum).isDead() && !m_activePlayers.contains(m_players.get(m_currectPlaerNum).getName())) {
+        if (m_players.get(m_currectPlaerNum).isDead() /*&& !m_activePlayers.contains(m_players.get(m_currectPlaerNum).getName())*/) {
             changeCurrPlayerIndex(index + 1);
         }
     }
