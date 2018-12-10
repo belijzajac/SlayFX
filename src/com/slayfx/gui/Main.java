@@ -59,6 +59,14 @@ public class Main extends Application {
         }
     }
 
+    static void gotoMapCreator(){
+        try{
+            replaceSceneContent("mapCreatorLayout.fxml");
+        }catch (Exception ex){
+            System.out.println("Caught an exception: " + ex);
+        }
+    }
+
     static void gotoGameStage(){
         try{
             replaceSceneContent("gameLayout.fxml");
