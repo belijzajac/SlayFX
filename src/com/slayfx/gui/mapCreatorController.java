@@ -3,7 +3,6 @@ package com.slayfx.gui;
 import com.slayfx.logic.tiles.Hex;
 import com.slayfx.logic.tiles.HexColor;
 import com.slayfx.logic.tiles.Point;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
@@ -82,7 +81,7 @@ public class mapCreatorController {
     }
 
     @FXML
-    public void onSaveMapBtnClicked(ActionEvent actionEvent) {
+    public void onSaveMapBtnClicked() {
         if(hasUserCreatedMap && hexToBeExported.size() >= 10){
             FileChooser fileChooser = new FileChooser();
 
@@ -127,7 +126,7 @@ public class mapCreatorController {
     }
 
     @FXML
-    public void onGoBackBtnClicked(ActionEvent actionEvent) {
+    public void onGoBackBtnClicked() {
         Main.gotoLevelChoosingStage();
     }
 }

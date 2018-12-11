@@ -1,7 +1,6 @@
 package com.slayfx.gui;
 
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -65,7 +64,7 @@ public class mapChooseController {
     }
 
     @FXML
-    private void onMapCreatorBtnClicked(ActionEvent event){
+    private void onMapCreatorBtnClicked(){
         try{
             Main.gotoMapCreator();
         } catch (Exception ex){

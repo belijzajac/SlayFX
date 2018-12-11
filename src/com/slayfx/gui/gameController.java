@@ -5,7 +5,6 @@ import com.slayfx.logic.GameBoard;
 import com.slayfx.logic.player.Player;
 import com.slayfx.logic.tiles.*;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -64,6 +63,8 @@ public class gameController {
 
         updateLabels(); // updates labels
 
+        // @param oldItem and oldHex are what current player has in possession
+        // @param itemToBeConquired - is what we step on with OldItem
         // Initialize mouse click event for each polygon (Hexagon)
         for(final Map.Entry<String, Polygon> hex : polygons.entrySet()) {
             hex.getValue().setOnMouseClicked(event -> {      // Run once a player clicks on any hex tile
@@ -82,31 +83,11 @@ public class gameController {
                     // Get that previous hex:
                     Hex oldHex = findHex(getKeyFromPolygonsMap(oldactivePolygon));
 
-                    if (oldHex == null) {
-                        System.out.println("oldHex: null");
-                    } else {
-                        System.out.println("oldHex: " + oldHex.getOwner() + " " + oldHex.getState() + " key=" + oldHex.getID());
-                    }
-
                     // Get that previous item:
                     BuyableItem oldItem = drawnGameObjects.get(oldHex.getID());
-                    if (oldItem == null) {
-                        System.out.println("oldItem: null");
-                    } else {
-                        System.out.println("oldItem: " + oldItem.getOwner());
-                    }
 
                     // Get item which we want to conquer
-                    // TODO: oldItem and OldHex is what current player has in possession
-                    // TODO: itemToBeConquired - is what we step on with OldItem
                     BuyableItem itemToBeConquered = drawnGameObjects.get(hexTile.getID());
-                    if (itemToBeConquered == null) {
-                        System.out.println("itemToBeConquered: null");
-                    } else {
-                        System.out.println("itemToBeConquered: " + itemToBeConquered.getOwner());
-                    }
-
-                    System.out.println("\n");
 
                     // Abstract checks
                     if (oldHex != null && oldItem != null && oldHex.getOwner().equals(getCurrentPlayerObj().getName()) && oldItem.getOwner().equals(getCurrentPlayerObj().getName())) {
@@ -186,11 +167,9 @@ public class gameController {
         Set<Map.Entry<String, Polygon>> mapSet = polygons.entrySet();
         for(Map.Entry<String, Polygon> entry : mapSet){
             if(entry.getValue().equals(_value)){
-                System.out.println("Found key : " + entry.getKey());
                 return entry.getKey();
             }
         }
-        System.out.println("Key not found");
         return null;
     }
 
@@ -476,7 +455,7 @@ public class gameController {
     }
 
     @FXML
-    private void onBuyTowerBtnClicked(ActionEvent event){
+    private void onBuyTowerBtnClicked(){
         Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
         if(getCurrentPlayerObj().getMoney() >= TowerItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
@@ -492,7 +471,7 @@ public class gameController {
     }
 
     @FXML
-    private void onBuyPeasantBtnClicked(ActionEvent event){
+    private void onBuyPeasantBtnClicked(){
         Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
         if(getCurrentPlayerObj().getMoney() >= PeasantItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
@@ -508,7 +487,7 @@ public class gameController {
     }
 
     @FXML
-    private void onBuySlodierBtnClicked(ActionEvent event){
+    private void onBuySlodierBtnClicked(){
         Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
         if(getCurrentPlayerObj().getMoney() >= SoldierItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
@@ -524,7 +503,7 @@ public class gameController {
     }
 
     @FXML
-    private void onBuyWarriorBtnClicked(ActionEvent event){
+    private void onBuyWarriorBtnClicked(){
         Hex currHex = findHex(getKeyFromPolygonsMap(activePolygon));
 
         if(getCurrentPlayerObj().getMoney() >= WarriorItem.m_cost && currHex.getState().equals(HexState.EMPTY) && doDiagonalNeighborsHaveTheSameColor(currHex)){
