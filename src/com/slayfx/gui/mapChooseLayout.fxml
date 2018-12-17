@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
@@ -36,5 +37,6 @@
       <Separator layoutX="280.0" layoutY="35.0" orientation="VERTICAL" prefHeight="200.0" />
       <Separator layoutX="592.0" layoutY="35.0" orientation="VERTICAL" prefHeight="200.0" />
       <Separator layoutX="24.0" layoutY="317.0" prefWidth="720.0" />
+      <CheckBox fx:id="AICheckBox" layoutX="325.0" layoutY="168.0" mnemonicParsing="false" text="include AI?" />
    </children>
 </AnchorPane>
