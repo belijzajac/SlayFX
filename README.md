@@ -14,7 +14,7 @@
 ![SlayFX-screenshot-03](/img/3_.png)
 
 ## Requirements ##
-* JDK >= 8
+* JDK 8u40 with JavaFX support (Oracle JDK or OpenJDK+OpenJFX)
 
 ## Building and running ##
 Run `make && make run`
